@@ -3,17 +3,22 @@
 pipeline {
     agent any
 
+    // Set environment variables
     environment {
         DOCKER_IMAGE = 'jt/e3:1.0'
         KUBE_NAMESPACE = 'default'
         KUBE_DEPLOYMENT_NAME = 'energi-node-app'
     }
 
+    // Build docker image 
     stages {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build(env.DOCKER_IMAGE)
+                    def dockerfilePath = 'Dockerfile'
+
+                    // Build the Docker image from dockerfile
+                    docker.build(env.DOCKER_IMAGE, "-f ${dockerfilePath} .")
                 }
             }
         }
@@ -21,6 +26,7 @@ pipeline {
         stage('Push Docker Image to Registry') {
             steps {
                 script {
+                    // Push built image to target registry/s3
                     docker.withRegistry('myprivate.url', 'docker-credentials') {
                         docker.image(env.DOCKER_IMAGE).push()
                     }
@@ -29,6 +35,7 @@ pipeline {
         }
 
         // Referenced https://github.com/jenkinsci/kubernetes-cd-plugin
+        // Haven't really deploy kubernetes using jenkins
         stage('Deploy to Kubernetes') {
             steps {
                 script {
