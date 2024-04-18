@@ -1,0 +1,49 @@
+# I'm knowledgeable about kubernetes as I did used it on one of my client years ago.
+# I've referenced the example on this documentation: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+# I wasn't able to run this script
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: energi-node-app
+spec:
+  serviceName: "energi-node-app"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: energi-node-app
+  template:
+    metadata:
+      labels:
+        app: energi-node-app
+    spec:
+      containers:
+      - name: energi-node-app
+        image: jt/e3:1.0
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: app-storage
+          mountPath: /app/data
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: energi-node-app-pvc
+      resources:
+        limits:
+          cpu: "0.5"
+          memory: "512Mi"
+        requests:
+          cpu: "0.25"
+          memory: "256Mi"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: energi-node-app-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
